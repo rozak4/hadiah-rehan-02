@@ -519,8 +519,7 @@ h1 {
       <p class="music-title">♫ MIDNIGHT RADIO</p>
 
       <p class="music-description">
-        Pilih lagu Sheila On 7 favoritmu.
-        Musik diputar tanpa menampilkan videonya.
+        Pilih lagu Sheila On 7 dari pemutar Spotify resmi.
       </p>
 
       <label
@@ -534,55 +533,38 @@ h1 {
         <option value="" selected disabled>
           -- Pilih lagu favoritmu --
         </option>
-
-        <option value="songs/film-favorit.mp3">
-          Film Favorit
-        </option>
-
-        <option value="songs/kita.mp3">
-          Kita
-        </option>
-
-        <option value="songs/lapang-dada.mp3">
-          Lapang Dada
-        </option>
-
-        <option value="songs/melompat-lebih-tinggi.mp3">
-          Melompat Lebih Tinggi
-        </option>
-
-        <option value="songs/memori-baik.mp3">
-          Memori Baik
-        </option>
-
-        <option value="songs/pemuja-rahasia.mp3">
-          Pemuja Rahasia
-        </option>
-
-        <option value="songs/seberapa-pantas.mp3">
-          Seberapa Pantas
-        </option>
-
-        <option value="songs/sephia.mp3">
-          Sephia
-        </option>
+        <option value="track/2BCYKFDWnZi9PMkZiemQh1">Film Favorit</option>
+        <option value="track/0HiNUFD2ovdPC2p5tbnzCG">Kita</option>
+        <option value="track/2I3kCabt2YKwn7O4Q6IyW5">Lapang Dada</option>
+        <option value="track/7Hun5YHQ5TEe9j97cU5XPg">Melompat Lebih Tinggi</option>
+        <option value="album/4pgRr87CxG6A3eVFv9I5fT">Memori Baik</option>
+        <option value="track/1Ib0UNLoqBEWTmBvXeFSni">Pemuja Rahasia</option>
+        <option value="track/1BaGfrlIWinaF77p7QASBH">Seberapa Pantas</option>
+        <option value="track/5gkTGkjFB5wAd3mSBEcQPY">Sephia</option>
       </select>
 
       <div class="music-actions">
-
         <button class="btn" id="playBtn" type="button">
-          ▶ PUTAR LAGU
+          ▶ TAMPILKAN PEMUTAR
         </button>
 
         <button class="btn secondary" id="stopBtn" type="button">
-          Ⅱ JEDA
+          ■ TUTUP PEMUTAR
         </button>
-
       </div>
 
       <p id="songStatus" role="status" aria-live="polite">
-        Pilih lagu dari daftar untuk memulai.
+        Pilih lagu untuk membuka pemutar resmi.
       </p>
+
+      <iframe
+        id="spotifyPlayer"
+        title="Pemutar musik resmi Spotify"
+        style="display:none;width:100%;height:152px;border:0;border-radius:12px;margin-top:12px"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        loading="lazy"
+        referrerpolicy="strict-origin-when-cross-origin">
+      </iframe>
 
     </div>
 
@@ -653,90 +635,60 @@ document.getElementById("openBtn")
 
 
 /* =================================
-   PEMUTAR LAGU
+   PEMUTAR LAGU SPOTIFY RESMI
 ================================= */
 
-const music = document.getElementById("musik");
 const songSelect = document.getElementById("songSelect");
 const songStatus = document.getElementById("songStatus");
 const playBtn = document.getElementById("playBtn");
 const stopBtn = document.getElementById("stopBtn");
+const spotifyPlayer = document.getElementById("spotifyPlayer");
 
-let chosenSong = "";
+function loadSpotifyPlayer() {
+  const track = songSelect.value;
 
-function selectedSongName() {
-  if (songSelect.selectedIndex < 0) {
-    return "";
-  }
-
-  return songSelect.options[songSelect.selectedIndex].text;
-}
-
-async function playSelectedSong() {
-  const file = songSelect.value;
-
-  if (!file) {
+  if (!track) {
     songStatus.textContent =
-      "Pilih lagu dahulu sebelum memutar musik.";
+      "Pilih lagu dahulu sebelum membuka pemutar.";
 
     songSelect.focus();
     return;
   }
 
-  if (chosenSong !== file) {
-    music.pause();
+  const songName =
+    songSelect.options[songSelect.selectedIndex].text;
 
-    music.src = file;
-    chosenSong = file;
+  spotifyPlayer.src =
+    "https://open.spotify.com/embed/" +
+    track +
+    "?utm_source=generator&theme=0";
 
-    music.load();
-  }
+  spotifyPlayer.style.display = "block";
 
   songStatus.textContent =
-    "Memuat lagu: " + selectedSongName() + "...";
+    "Lagu pilihan: " + songName +
+    ". Tekan tombol putar di pemutar Spotify di bawah.";
 
-  try {
-    await music.play();
-
-    songStatus.textContent =
-      "♫ Sedang diputar: " + selectedSongName();
-
-    playBtn.textContent = "▶ PUTAR ULANG";
-
-  } catch (error) {
-    songStatus.textContent =
-      "Lagu gagal diputar. Periksa file dan format audio MP4.";
-  }
+  playBtn.textContent = "↻ MUAT ULANG PEMUTAR";
 }
 
-playBtn.addEventListener("click", playSelectedSong);
+playBtn.addEventListener("click", loadSpotifyPlayer);
 
-songSelect.addEventListener("change", () => {
-  chosenSong = "";
-  playSelectedSong();
-});
+songSelect.addEventListener("change", loadSpotifyPlayer);
 
 stopBtn.addEventListener("click", () => {
-  music.pause();
+  spotifyPlayer.src = "";
+  spotifyPlayer.style.display = "none";
 
-  if (music.currentSrc) {
-    songStatus.textContent =
-      "Musik dijeda: " + selectedSongName();
-  } else {
-    songStatus.textContent =
-      "Belum ada lagu yang diputar.";
-  }
-});
-
-music.addEventListener("ended", () => {
-  playBtn.textContent = "▶ PUTAR LAGU";
-});
-
-music.addEventListener("error", () => {
   songStatus.textContent =
-    "File tidak bisa diputar. Periksa folder songs atau gunakan MP3.";
+    "Pemutar ditutup. Pilih lagu untuk mendengarkan lagi.";
+
+  playBtn.textContent = "▶ TAMPILKAN PEMUTAR";
 });
 
+/* =================================
+   PEMUTAR LAGU SELESAI
+================================= */
 
 /* =================================
    KEJUTAN ULANG TAHUN
